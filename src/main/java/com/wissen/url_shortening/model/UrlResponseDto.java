@@ -1,6 +1,7 @@
 package com.wissen.url_shortening.model;
 
 import lombok.*;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Component
 public class UrlResponseDto {
 
     private String originalUrl;

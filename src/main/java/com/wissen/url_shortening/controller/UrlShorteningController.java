@@ -20,20 +20,22 @@ public class UrlShorteningController {
 
     @Autowired
     private UrlService urlService;
+    @Autowired
+    private UrlResponseDto urlResponseDto;
+    @Autowired
+    private UrlErrorResponseDto urlErrorResponseDto;
 
     @PostMapping("/generate")
     public ResponseEntity<?> generateShortLink(@RequestBody UrlDto urlDto) {
         Url urlToRet = urlService.generateShortLink(urlDto);
         //if url object that need to prepare(according to some format) is not null, then return UrlReponse object
         if(urlToRet != null) {
-            UrlResponseDto urlResponseDto = new UrlResponseDto();
             urlResponseDto.setOriginalUrl(urlToRet.getOriginalUrl());
             urlResponseDto.setExpirationDate(urlToRet.getExpirationDate());
             urlResponseDto.setShortLink(urlToRet.getShortLink());
             return new ResponseEntity<UrlResponseDto>(urlResponseDto, HttpStatus.OK);
         }
         //we are not able to generate the short link, So prepare url Error Reponse object & return it
-        UrlErrorResponseDto urlErrorResponseDto = new UrlErrorResponseDto();
         urlErrorResponseDto.setStatus("404");
         urlErrorResponseDto.setError("There was an error processing your request, " +
                 "please try again");
@@ -42,7 +44,6 @@ public class UrlShorteningController {
 
     @GetMapping("/{shortLink}")
     public ResponseEntity<?> redirectToOriginalUrl(@PathVariable String shortLink, HttpServletResponse response) {
-        UrlErrorResponseDto urlErrorResponseDto = new UrlErrorResponseDto();
         //if passed short is empty
         if(StringUtils.isEmpty(shortLink)) {
             urlErrorResponseDto.setStatus("404");
@@ -75,11 +76,16 @@ public class UrlShorteningController {
         } catch (IOException e) {
             urlErrorResponseDto.setStatus("500");
             urlErrorResponseDto.setError("Error during redirection");
-            return new ResponseEntity<>(urlErrorResponseDto, HttpStatus.OK);
+            return new ResponseEntity<UrlErrorResponseDto>(urlErrorResponseDto, HttpStatus.OK);
         }
 
         return null; // This line will never be reached
+    }
 
+    @DeleteMapping("/{shortLink}")
+    public void deleteShortUrl(@PathVariable String shortLink) {
+        Url urlToDelete = urlService.getEncodedUrl(shortLink);
+        urlService.deleteShortLink(urlToDelete);
     }
 
 }
