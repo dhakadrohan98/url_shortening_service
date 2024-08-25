@@ -41,13 +41,14 @@ public class UrlServiceImpl implements UrlService {
                 return urlToReturn;
             }
         }
-
         return null;
     }
 
     private LocalDateTime getExpirationDateUtil(String expiratoinDate, LocalDateTime creationDate) {
+        //isBlank(): Check if the String is null or has only whitespaces. Modified
+        //from org. apache. commons. lang. StringUtils#isBlank(String)
         if (StringUtils.isBlank(expiratoinDate)) {
-            //set expiry for 1 minute for new url request
+            //set expiry for 1 minute for new url request, if expiration date is not given
             return creationDate.plusSeconds(60);
         }
         //Obtains an instance of LocalDateTime from a text string such as 2007-12-03T10:15:30.
@@ -67,10 +68,11 @@ public class UrlServiceImpl implements UrlService {
         // using MD5 algorithm
         //32 characters in hash string
         String hash = Hashing.md5().hashString(saltedUrl, StandardCharsets.UTF_8).toString();
+        //32 hexadecimal characters has been generated
         System.out.println("String hash due to md5() => " + hash);
         //convert hash to BigInteger to handle large numbers
         BigInteger hashNumber = new BigInteger(hash, 16);
-        //40 digits long big integer
+        //40 digits Big integer
         System.out.println("Hash number due to md5() => " + hashNumber);
 
         //Base62 encoding of the hash (custom method)
