@@ -28,14 +28,14 @@ public class UrlShorteningController {
     @PostMapping("/generate")
     public ResponseEntity<?> generateShortLink(@RequestBody UrlDto urlDto) {
         Url urlToRet = urlService.generateShortLink(urlDto);
-        //if url object that need to prepare(according to some format) is not null, then return UrlReponse object
+        //if url object(not null) that need to prepare(according to some format), then return UrlReponse object
         if(urlToRet != null) {
             urlResponseDto.setOriginalUrl(urlToRet.getOriginalUrl());
             urlResponseDto.setExpirationDate(urlToRet.getExpirationDate());
             urlResponseDto.setShortLink(urlToRet.getShortLink());
             return new ResponseEntity<UrlResponseDto>(urlResponseDto, HttpStatus.OK);
         }
-        //we are not able to generate the short link, So prepare url Error Reponse object & return it
+        //If we are not able to generate the short link, So prepare url Error Reponse object & return it
         urlErrorResponseDto.setStatus("404");
         urlErrorResponseDto.setError("There was an error processing your request, " +
                 "please try again");
@@ -44,7 +44,7 @@ public class UrlShorteningController {
 
     @GetMapping("/{shortLink}")
     public ResponseEntity<?> redirectToOriginalUrl(@PathVariable String shortLink, HttpServletResponse response) {
-        //if passed short is empty
+        //if passed short link is empty
         if(StringUtils.isEmpty(shortLink)) {
             urlErrorResponseDto.setStatus("404");
             urlErrorResponseDto.setError("Invalid url");
@@ -54,7 +54,7 @@ public class UrlShorteningController {
         Url urlToReturn = urlService.getEncodedUrl(shortLink);
         //if url is expired does not exist due to some other reason
         if(urlToReturn == null) {
-            urlErrorResponseDto.setError("url does not exist or it might have expired");
+            urlErrorResponseDto.setError("url does not exist or it might have been expired");
             urlErrorResponseDto.setStatus("400");
             return new ResponseEntity<UrlErrorResponseDto>(urlErrorResponseDto, HttpStatus.OK);
         }
@@ -62,12 +62,13 @@ public class UrlShorteningController {
         if(urlToReturn.getExpirationDate().isBefore(LocalDateTime.now())) {
             //delete the url because it is expired
             urlService.deleteShortLink(urlToReturn);
-            urlErrorResponseDto.setStatus("Url expired. please generate a new one");
-            urlErrorResponseDto.setError("200");
+            //set response in urlErrorReponseDto object & return this response
+            urlErrorResponseDto.setError("Url has been expired. please generate a new one");
+            urlErrorResponseDto.setStatus("200");
             return new ResponseEntity<UrlErrorResponseDto>(urlErrorResponseDto, HttpStatus.OK);
         }
 
-        // Redirect to the original URL
+        // Redirect to the original URL, if url is not expired
         try {
             //Sends a redirect response to the client using the specified redirect
             // location URL with the status code SC_FOUND 302 (Found), clears the
@@ -84,8 +85,8 @@ public class UrlShorteningController {
 
     @DeleteMapping("/{shortLink}")
     public void deleteShortUrl(@PathVariable String shortLink) {
-        Url urlToDelete = urlService.getEncodedUrl(shortLink);
-        urlService.deleteShortLink(urlToDelete);
+        Url urlObj = urlService.getEncodedUrl(shortLink);
+        urlService.deleteShortLink(urlObj);
     }
 
 }
