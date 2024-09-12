@@ -107,6 +107,31 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>3.4.0</version>
+				<configuration>
+					<to>
+						<image>rohandhakad20/url-shortening-2</image>
+						<credHelper></credHelper>
+						<!-- leave this empty to bypass the helper -->
+					</to>
+					<container>
+						<environment>
+							<!-- Set the MySQL connection environment variables -->
+							<SPRING_DATASOURCE_URL>jdbc:mysql://mysqlContainer:3306/urlshortner</SPRING_DATASOURCE_URL>
+							<SPRING_DATASOURCE_USERNAME>root</SPRING_DATASOURCE_USERNAME>
+							<SPRING_DATASOURCE_PASSWORD>root</SPRING_DATASOURCE_PASSWORD>
+						</environment>
+						<ports>
+							<port>8080</port>
+							<!-- Define the port the app will expose -->
+						</ports>
+					</container>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 
